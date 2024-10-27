@@ -1,101 +1,132 @@
-import Image from "next/image";
+"use client";
+
+import BoundingBoxOnImage from "@/components/bounging-box-on-image";
+import LoadingButton from "@/components/button";
+import FileInput from "@/components/input/fileInput";
+import TextInput from "@/components/input/textInput";
+import axios from "axios";
+import { SyntheticEvent, useCallback, useState } from "react";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [file, setFile] = useState<{
+    name: string;
+    size: number;
+    preview: string;
+  }>({} as any);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const [queryText, setQueryText] = useState("");
+  const [coordinateInput, setCoordinateInput] = useState("");
+
+  const [result, setResult] = useState("");
+  const [parsedResult, setParsedResult] = useState<
+    {
+      point: { x: number; y: number }[];
+    }[]
+  >([]);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const makeRequest = useCallback(
+    async (e: SyntheticEvent) => {
+      e.preventDefault();
+      try {
+        setIsSubmitting(true);
+        const response = await axios({
+          method: "post",
+          url: `${BASE_URL}/highlight-coordinates`,
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer`,
+          },
+          withCredentials: false,
+          data: {
+            image: file,
+            query: queryText,
+          },
+        });
+        const { result } = response?.data;
+        setResult(result || "");
+      } catch (error) {
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [file, queryText, BASE_URL]
+  );
+
+  const createBoundingBoxes = useCallback(
+    (e: SyntheticEvent) => {
+      e.preventDefault();
+      try {
+        const parsedJson = JSON.parse(coordinateInput);
+        if (parsedJson) {
+          setParsedResult([
+            {
+              point: [
+                { x: 210, y: 178 },
+                { x: 308, y: 178 },
+                { x: 308, y: 210 },
+                { x: 210, y: 210 },
+                { x: 210, y: 178 },
+              ],
+            },
+          ]);
+        } else {
+          alert("invalid json bounding box");
+        }
+      } catch (error) {
+        alert("invalid json bounding box");
+      }
+    },
+    [coordinateInput]
+  );
+
+  return (
+    <section className="w-full flex flex-col items-center my-8">
+      <div className="w-full max-w-screen-xl flex flex-col gap-10">
+        <form onSubmit={makeRequest} className=" flex flex-col gap-6">
+          <FileInput value={file} setValue={setFile} id="image-upload" />
+          <div className=" flex items-center gap-4">
+            <TextInput
+              value={queryText}
+              setValue={setQueryText}
+              inputType="text"
+              id="query-search"
+              placeholder="Input query text"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <div className=" w-fit">
+              <LoadingButton
+                type="submit"
+                isLoading={isSubmitting}
+                label="Upload"
+              />
+            </div>
+          </div>
+        </form>
+        <div className=" p-3 bg-gray-100 rounded-lg">
+          <p>{result}</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        <form
+          onSubmit={createBoundingBoxes}
+          className=" flex items-center gap-4"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          <TextInput
+            value={coordinateInput}
+            setValue={setCoordinateInput}
+            inputType="text"
+            id="bounding-box-coodinates"
+            placeholder="Input bounding box coordinates i.e. [ { 'x': 268, 'y': 184}]..."
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <div className=" w-fit">
+            <LoadingButton type="submit" isLoading={false} label="Draw Boxes" />
+          </div>
+        </form>
+        {file?.preview && (
+          <BoundingBoxOnImage anotation={parsedResult} image={file?.preview} />
+        )}
+      </div>
+    </section>
   );
 }

@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Search Text in image using Google Gemini FRONTEND
 
-## Getting Started
+=====================================
 
-First, run the development server:
+### Project Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This is a helper software used in searching for a specific keyword in an image using Google Gemini API as the backend service. The need of this software arose when at the hospital and the matron was searching for a the name of a patient from a stash of printed hard copy of patients data. With this software, a simple upload of the a snapshot of the document and keyword search will save time of manual checking of the document to determine if the name is in that document or not.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Home Page**:Brief Explanation explanation of the product.
+- **Demo UI**: Upload and query based on desired keyword.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> Docker commands and usage
 
-## Learn More
+ <table>
+    <tr>
+      <th>Task</th>
+      <th>Docker commands <a href="https://medium.com/@srijaanaparthy/step-by-step-guide-to-install-docker-on-amazon-linux-machine-in-aws-a690bf44b5fe">set up docker on ec2 instance</a></th>
+    </tr>
+    <tr>
+      <td>Build a docker image using docker compose</td>
+      <td>docker-compose build</td>
+    </tr>
+    <tr>
+      <td>Run the image locally</td>
+      <td>docker run -d -p 8080:3000 --name text-in-image text-in-image:v1.0.0</td>
+    </tr>
+    <tr>
+      <td>Push Docker image to Dockerhub</td>
+      <td>docker tag text-in-image:v1.0.0 adewaleda/text-in-image:v1.0.0</td>
+    </tr>
+    <tr>
+      <td>Push local image to repository</td>
+      <td>docker push adewaleda/text-in-image:v1.0.0</td>
+    </tr>
+    <tr>
+      <td>Pull image from DockerHub</td>
+      <td>docker pull adewaleda/text-in-image:v1.0.0</td>
+    </tr>
+    </table>
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### [DEMO](https://www.adewaleda.com/npm-packages/adewale-ui-toolbox)

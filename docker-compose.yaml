@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: text-in-image
+    image: text-in-image:v1.0.0
+    build:
+      context: .
+      # target: production
