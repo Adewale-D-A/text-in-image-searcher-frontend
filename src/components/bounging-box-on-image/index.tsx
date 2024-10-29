@@ -1,15 +1,22 @@
 "use client";
-import canvasURL from "@/utils/canvas_to_img";
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import canvasURL from "@/utils/canvas_to_img";
 
 export default function BoundingBoxOnImage({
   anotation,
+  rect,
   image,
 }: {
-  anotation: {
+  anotation?: {
     point: { x: number; y: number }[];
   }[];
+  rect?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
   image: string;
 }) {
   const imageRef = useRef() as any;
@@ -18,9 +25,15 @@ export default function BoundingBoxOnImage({
 
   const PaintCanvas = useCallback(
     (
-      annotationArray: {
+      annotationArray?: {
         point: { x: number; y: number }[];
-      }[]
+      }[],
+      rect?: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      }
     ) => {
       //initialize canvas
       const ctx = canvasRef.current.getContext("2d");
@@ -28,49 +41,65 @@ export default function BoundingBoxOnImage({
       //get original image dimension
       const imgWidth = imageRef.current.naturalWidth;
       const imgHeight = imageRef.current.naturalHeight;
-      console.log({ imgWidth, imgHeight });
+
       //set canvas to be in the original dimension
       canvasRef.current.width = imgWidth;
       canvasRef.current.height = imgHeight;
 
-      annotationArray.forEach((item) => {
-        ctx.beginPath();
-        item.point.forEach((annotationPoint) => {
-          const xCoord = annotationPoint.x;
-          const yCoord = annotationPoint.y;
-          ctx.lineTo(xCoord, yCoord);
+      ctx.beginPath();
+      if (annotationArray) {
+        // using coordinate points to draw shape
+        annotationArray?.forEach((item) => {
+          item.point.forEach((annotationPoint) => {
+            const xCoord = annotationPoint.x;
+            const yCoord = annotationPoint.y;
+            ctx.lineTo(xCoord, yCoord);
+          });
+          ctx.strokeStyle = "#FF0000";
+          ctx.stroke();
+          ctx.lineWidth = 3;
         });
+      } else if (rect) {
+        ctx.rect(rect?.x, rect?.y, rect?.width, rect?.height);
         ctx.strokeStyle = "#FF0000";
         ctx.stroke();
-        ctx.lineWidth = 3;
-      });
+      }
 
       const imgUrl = canvasURL("canvas_id");
       setAnotationImageBinary(imgUrl);
     },
-    [imageRef, canvasRef]
+    [imageRef, canvasRef, image]
   );
 
   useEffect(() => {
-    PaintCanvas(anotation);
-  }, [anotation]);
+    PaintCanvas(anotation, rect);
+  }, [anotation, rect]);
+
   return (
     <div className="w-full">
       <div className="w-full relative">
+        {(rect?.x || anotation) && (
+          <Image
+            src={anotationImageBinary || "/logo192.png"}
+            alt="canvas overlay"
+            className="w-full absolute top-0"
+            height={500}
+            width={500}
+          />
+        )}
         <Image
-          src={anotationImageBinary || "/logo192.png"}
-          alt="canvas overlay"
-          className="w-full absolute top-0"
           height={500}
           width={500}
+          src={image}
+          alt="original image"
+          className="w-full "
         />
-        <img src={image} alt="crop" className="w-full " />
       </div>
       {/* get canvas and image properties */}
       <div className="hidden">
         <Image
           src={image}
-          alt="screengrab"
+          alt="image placeholder"
           title=""
           ref={imageRef}
           className="w-full"

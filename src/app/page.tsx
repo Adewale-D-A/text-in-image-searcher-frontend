@@ -20,11 +20,12 @@ export default function Home() {
   const [coordinateInput, setCoordinateInput] = useState("");
 
   const [result, setResult] = useState("");
-  const [parsedResult, setParsedResult] = useState<
-    {
-      point: { x: number; y: number }[];
-    }[]
-  >([]);
+  const [parsedResult, setParsedResult] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }>();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,21 +62,7 @@ export default function Home() {
       e.preventDefault();
       try {
         const parsedJson = JSON.parse(coordinateInput);
-        if (parsedJson) {
-          setParsedResult([
-            {
-              point: [
-                { x: 210, y: 178 },
-                { x: 308, y: 178 },
-                { x: 308, y: 210 },
-                { x: 210, y: 210 },
-                { x: 210, y: 178 },
-              ],
-            },
-          ]);
-        } else {
-          alert("invalid json bounding box");
-        }
+        setParsedResult(parsedJson); //{"x":298, "y":180, "width": 200, "height":200}
       } catch (error) {
         alert("invalid json bounding box");
       }
@@ -117,14 +104,15 @@ export default function Home() {
             setValue={setCoordinateInput}
             inputType="text"
             id="bounding-box-coodinates"
-            placeholder="Input bounding box coordinates i.e. [ { 'x': 268, 'y': 184}]..."
+            placeholder="Input bounding box coordinates i.e. { 'x': 268, 'y': 184, width: 50, height: 50}..."
           />
           <div className=" w-fit">
             <LoadingButton type="submit" isLoading={false} label="Draw Boxes" />
           </div>
         </form>
         {file?.preview && (
-          <BoundingBoxOnImage anotation={parsedResult} image={file?.preview} />
+          // <BoundingBoxOnImage anotation={parsedResult} image={file?.preview} />
+          <BoundingBoxOnImage image={file?.preview} rect={parsedResult} />
         )}
       </div>
     </section>
